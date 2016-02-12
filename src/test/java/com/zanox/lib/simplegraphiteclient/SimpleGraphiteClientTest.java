@@ -6,6 +6,8 @@ import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,13 +63,29 @@ public class SimpleGraphiteClientTest {
 	
 	@Test
 	public void testSendMultipleMetrics() {
-		Map<String, Integer> data = new  HashMap<String, Integer>();
+		Map<String, Number> data = new  HashMap<String, Number>();
 		data.put("junit.test.metric1", 4711);
 		data.put("junit.test.metric2", 4712);
 		simpleGraphiteClient.sendMetrics(data);
 		assertTrue(out.toString().contains("junit.test.metric1 4711 " + currentTimestamp));
 		assertTrue(out.toString().contains("junit.test.metric2 4712 " + currentTimestamp));
 	}
+	
+	   @Test
+	    public void testSendFloatingPointAndLongMetrics() {
+	        Map<String, Number> data = new  HashMap<String, Number>();
+	        data.put("junit.test.metric1", 4711);
+	        data.put("junit.test.metric2", 4712.333);
+	        data.put("junit.test.metric3", 4712324723874687236L);
+	        data.put("junit.test.metric4", new BigDecimal(3.34, new MathContext(3)));
+	        data.put("junit.test.metric5", 4.89767324);
+	        simpleGraphiteClient.sendMetrics(data);
+	        assertTrue(out.toString().contains("junit.test.metric1 4711 " + currentTimestamp));
+	        assertTrue(out.toString().contains("junit.test.metric2 4712.333 " + currentTimestamp));
+	        assertTrue(out.toString().contains("junit.test.metric3 4712324723874687236 " + currentTimestamp));
+	        assertTrue(out.toString().contains("junit.test.metric4 3.34 " + currentTimestamp));
+	        assertTrue(out.toString().contains("junit.test.metric5 4.89767324 " + currentTimestamp));
+	    }
 	
 	@Test
 	public void testCurrentTimestamp() {
